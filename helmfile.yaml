@@ -121,6 +121,7 @@ releases:
       - ollama:
           models:
             - deepseek-r1:14b
+            - llama3.1:8b
         nodeSelector: 
           cloud.google.com/gke-accelerator: nvidia-l4
           cloud.google.com/gke-accelerator-count: "1"
