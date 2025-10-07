@@ -27,8 +27,6 @@
             gke-gcloud-auth-plugin
           ]
         );
-
-        pipelines-image = pkgs.callPackage ./pipelines_image.nix { };
       };
 
       flake = flake-utils.lib.eachDefaultSystem (
@@ -39,18 +37,9 @@
             config.allowUnfree = true;
             overlays = [ self.overlays.default ];
           };
-
-          linuxPkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-            overlays = [ self.overlays.default ];
-            crossSystem = "x86_64-linux";
-          };
         in
         {
-          packages = {
-            default = linuxPkgs.pipelines-image;
-          };
+          packages = { };
 
           apps = {
             deploy = flake-utils.lib.mkApp { drv = pkgs.callPackage ./deploy.nix { }; };
