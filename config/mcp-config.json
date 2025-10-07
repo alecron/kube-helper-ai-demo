@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "kubernetes": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-kubernetes"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/",
+        "/home",
+        "/etc",
+        "/opt",
+        "/var"
+      ]
+    },
+    "shell": {
+      "command": "python3",
+      "args": ["/app/mcp-servers/shell-server.py"]
+    }
+  }
+}

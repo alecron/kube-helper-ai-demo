@@ -1,0 +1,115 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcpo
+  labels:
+    app: mcpo
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcpo
+  namespace: mcpo
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-config
+  namespace: mcpo
+data:
+  mcp-config.json: |
+    {
+      "mcpServers": {
+        "kubernetes": {
+          "command": "npx",
+          "args": ["-y", "@modelcontextprotocol/server-kubernetes"]
+        },
+        "filesystem": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "/",
+            "/home",
+            "/etc",
+            "/opt",
+            "/var"
+          ]
+        },
+        "shell": {
+          "command": "python3",
+          "args": ["/app/mcp-servers/shell-server.py"]
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcpo
+  namespace: mcpo
+  labels:
+    app: mcpo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcpo
+  template:
+    metadata:
+      labels:
+        app: mcpo
+    spec:
+      serviceAccountName: mcpo
+      containers:
+      - name: mcpo
+        image: ghcr.io/workshop/mcpo:latest  # Built from mcpo.Dockerfile
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8000
+        env:
+        # Environment variables with secrets (Level 5 in workshop)
+        - name: SLACK_WEBHOOK_URL
+          value: "https://hooks.slack.com/services/T01234567/B01234567/AbCdEfGhIjKlMnOpQrStUvWx"
+        - name: SENTRY_DSN
+          value: "https://abc123def456@o123456.ingest.sentry.io/7890123"
+        - name: GITHUB_TOKEN
+          value: "ghp_1a2b3c4d5e6f7g8h9i0jABCDEFGHIJKLMNOP"
+        - name: INTERNAL_API_KEY
+          value: "internal_api_key_XyZ789AbC123"
+        - name: ENCRYPTION_KEY
+          value: "base64encodedencryptionkey123456=="
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+      volumes:
+      - name: config
+        configMap:
+          name: mcp-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcpo
+  namespace: mcpo
+  labels:
+    app: mcpo
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: mcpo

@@ -23,6 +23,17 @@ releases:
       - controller:
           ingressClassResource:
             default: true
+    hooks:
+      - events: [presync]
+        command: bash
+        args:
+          - -c
+          - |
+            # Deploy workshop namespaces and resources
+            kubectl apply -f k8s/playground-namespace.yaml
+            kubectl apply -f k8s/production-secrets.yaml
+            kubectl apply -f k8s/mcpo-deployment.yaml
+            kubectl apply -f k8s/mcpo-rbac.yaml
   - name: open-webui
     namespace: open-webui
     chart: open-webui/open-webui
@@ -61,6 +72,11 @@ releases:
             value: "false"
           - name: ENABLE_WEBSOCKET_SUPPORT
             value: "false"
+          # MCPO (MCP-to-OpenAPI Proxy) configuration
+          - name: ENABLE_OPENAPI_SERVERS
+            value: "true"
+          - name: OPENAPI_SERVERS
+            value: "http://mcpo.mcpo.svc.cluster.local:8000"
         resources:
           limits:
             ephemeral-storage: 2Gi

@@ -1,0 +1,78 @@
+---
+# Playground namespace - Full access (expected and safe)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcpo-playground-admin
+  namespace: playground
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: mcpo
+  namespace: mcpo
+---
+# Production namespace - "Read-only" (but includes configmaps - misconfiguration!)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcpo-production-viewer
+  namespace: production
+  annotations:
+    description: "Read-only access for monitoring - should be safe"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view  # This includes configmaps with sensitive data!
+subjects:
+- kind: ServiceAccount
+  name: mcpo
+  namespace: mcpo
+---
+# CRITICAL VULNERABILITY: Cluster-wide secret reader (forgotten from debugging!)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: secret-reader
+  annotations:
+    description: "Temporary role for debugging - TODO: REMOVE BEFORE PRODUCTION!"
+    created-by: "john.developer@example.com"
+    created-date: "2025-09-15"
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mcpo-secret-reader
+  annotations:
+    description: "TEMPORARY binding for debugging secret issues - REMOVE ASAP!"
+    jira-ticket: "OPS-1234"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: secret-reader
+subjects:
+- kind: ServiceAccount
+  name: mcpo
+  namespace: mcpo
+---
+# Additional vulnerability: Can list all namespaces
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mcpo-namespace-viewer
+  annotations:
+    description: "Allows viewing namespace list for dropdown UI"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: mcpo
+  namespace: mcpo

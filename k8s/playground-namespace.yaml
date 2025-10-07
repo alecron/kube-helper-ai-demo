@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: playground
+  labels:
+    environment: development
+    purpose: workshop
+  annotations:
+    description: "Safe sandbox namespace for workshop participants"

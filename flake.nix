@@ -49,17 +49,40 @@
             with pkgs;
             mkShellNoCC {
               packages = [
+                # Python development
+                python3
+                uv
+                ruff
+
+                # Python LSP for editors
                 (python3.withPackages (
                   ps: with ps; [
                     jedi-language-server
                     python-lsp-server
                   ]
                 ))
-                ruff
+
+                # Kubernetes/Helm tools
                 helm-with-plugins
                 helmfile-with-plugins
+                kubectl
+
+                # Cloud tools
                 gdk
+
+                # Node.js for MCP servers
+                nodejs_22
               ];
+
+              shellHook = ''
+                echo "🚀 Workshop Development Environment"
+                echo "  • Python $(python --version | cut -d' ' -f2) with uv"
+                echo "  • Helm $(helm version --short)"
+                echo "  • kubectl $(kubectl version --client --short 2>/dev/null || echo 'not connected')"
+                echo ""
+                echo "📦 MCP Servers: ./mcp-servers/"
+                echo "  Run: cd mcp-servers && uv pip install -e ."
+              '';
             };
 
           formatter = pkgs.nixfmt-rfc-style;

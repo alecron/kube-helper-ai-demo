@@ -1,0 +1,18 @@
+[project]
+name = "workshop-mcp-servers"
+version = "0.1.0"
+description = "Custom MCP servers for AI security workshop"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+shell-server = "shell_server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []
