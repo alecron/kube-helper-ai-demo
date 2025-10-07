@@ -1,15 +1,29 @@
 #!/usr/bin/env bash
 
-kubectl delete namespace playground --grace-period=10  || true
-kubectl delete pod -n open-webui -l app.kubernetes.io/component=open-webui
-kubectl delete pod -n open-webui-pipelines -l app.kubernetes.io/component=pipelines
+# Restart demo environment for MCP architecture
+# Recreates playground namespace and restarts pods
 
+echo "🔄 Restarting workshop demo environment..."
+
+# Delete and recreate playground namespace
+kubectl delete namespace playground --grace-period=10 || true
 kubectl create namespace playground
-kubectl create rolebinding open-webui-pipelines-playground-edit \
-  --namespace playground \
-  --clusterrole edit \
-  --serviceaccount open-webui-pipelines:default
-kubectl create clusterrole cluster-view --resource '*.*' --verb get --verb list --verb watch || true
-kubectl create clusterrolebinding open-webui-pipelines-cluster-view \
-  --clusterrole cluster-view \
-  --serviceaccount open-webui-pipelines:default || true
+
+# Restart Open WebUI pods
+echo "🔄 Restarting Open WebUI..."
+kubectl delete pod -n open-webui -l app.kubernetes.io/name=open-webui
+
+# Restart MCPO pods
+echo "🔄 Restarting MCPO..."
+kubectl delete pod -n mcpo -l app=mcpo
+
+# Reapply RBAC (in case it needs refreshing)
+echo "🔄 Refreshing RBAC..."
+kubectl apply -f k8s/mcpo-rbac.yaml
+
+echo "✅ Demo environment restarted!"
+echo ""
+echo "Check status:"
+echo "  kubectl get pods -n open-webui"
+echo "  kubectl get pods -n mcpo"
+echo "  kubectl get pods -n playground"
