@@ -28,13 +28,14 @@ releases:
     chart: open-webui/open-webui
     createNamespace: true
     atomic: true
-    version: 6.26.0
+    version: 8.9.0
     needs: [ ingress-nginx/ingress-nginx ]
     values:
+      - values/open-webui.values.yaml
       - image:
           pullPolicy: IfNotPresent
           repository: ghcr.io/open-webui/open-webui
-          tag: 0.6.18
+          tag: 0.6.32
       - ollama:
           enabled: false
         persistence:
@@ -52,10 +53,6 @@ releases:
             value: "http://ollama.ollama.svc.cluster.local:11434"
           - name: DEFAULT_MODELS
             value: llama3.1:8b
-          - name: OPENAI_API_BASE_URL # This enables pipelines in the UI
-            value: http://open-webui-pipelines.open-webui-pipelines.svc.cluster.local:9099
-          - name: OPENAI_API_KEY
-            value: 0p3n-w3bu!
           - name: ENABLE_FOLLOW_UP_GENERATION
             value: "false"
           - name: ENABLE_AUTOCOMPLETE_GENERATION
@@ -82,51 +79,6 @@ releases:
         ingress:
           enabled: true
           host: open-webui.127-0-0-1.nip.io # To be edited later by the deploy script
-  - name: open-webui-pipelines
-    namespace: open-webui-pipelines
-    chart: open-webui/pipelines
-    createNamespace: true
-    atomic: true
-    version: 0.7.0
-    values:
-    - image:
-        pullPolicy: Always
-        repository: ghcr.io/tembleking/open-webui-pipelines
-        tag: 0.0.4
-    - ingress:
-        enabled: false
-      persistence:
-        enabled: false
-      serviceAccount:
-        automountServiceAccountToken: true
-    - extraEnvVars:
-      - name: PIPELINES_URLS
-        value: https://raw.githubusercontent.com/tembleking/kube-helper-ai-demo/master/helper.py
-    hooks:
-      - events: [prepare]
-        command: bash
-        args:
-          - -c
-          - |
-            kubectl create namespace playground || true;
-            kubectl create rolebinding open-webui-pipelines-playground-edit \
-              --namespace playground \
-              --clusterrole edit \
-              --serviceaccount open-webui-pipelines:open-webui-pipelines || true;
-            kubectl create clusterrole cluster-view --resource '*.*' --verb get --verb list --verb watch || true;
-            kubectl create clusterrolebinding open-webui-pipelines-cluster-view \
-              --clusterrole cluster-view \
-              --serviceaccount open-webui-pipelines:open-webui-pipelines || true;
-      - events: [preuninstall]
-        command: bash
-        args:
-          - -c
-          - |
-            kubectl delete rolebinding open-webui-pipelines-playground-edit --namespace playground || true;
-            kubectl delete namespace playground || true;
-            kubectl delete clusterrolebinding open-webui-pipelines-cluster-view || true;
-            kubectl delete clusterrole cluster-view || true;
-            kubectl delete clusterrolebinding open-webui-pipelines-cluster-admin || true;
   - name: ollama
     namespace: ollama
     chart: ollama-helm/ollama
@@ -135,7 +87,7 @@ releases:
     version: 1.26.0
     values:
       - image:
-          tag: 0.11.3
+          tag: 0.12.4
       - ollama:
           models:
             pull:

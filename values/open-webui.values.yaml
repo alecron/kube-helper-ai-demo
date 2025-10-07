@@ -1,0 +1,9 @@
+service:
+  type: ClusterIP
+
+mcp:
+  enabled: true
+  servers: []
+
+security:
+  allowed_mcp_digests: []
