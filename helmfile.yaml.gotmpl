@@ -32,48 +32,27 @@ releases:
             set -euo pipefail
 
             echo "🏗️  Creating namespaces..."
-            # Ensure mcpo namespace exists before creating ConfigMaps
             kubectl create namespace mcpo --dry-run=client -o yaml | kubectl apply -f -
 
-            # Deploy workshop namespaces and resources
-            kubectl apply -f k8s/playground-namespace.yaml
-            kubectl apply -f k8s/production-secrets.yaml
+            echo "📋 Deploying namespaces and secrets..."
+            kubectl apply -f ./k8s/playground-namespace.yaml
+            kubectl apply -f ./k8s/production-secrets.yaml
 
             echo "📋 Creating ConfigMaps..."
-
-            # Validate setup script exists
-            if [ ! -f k8s/setup-exploits.sh ]; then
-              echo "ERROR: k8s/setup-exploits.sh not found"
-              exit 1
-            fi
-
-            # Create ConfigMap from setup script
             kubectl create configmap setup-exploits-script \
-              --from-file=setup-exploits.sh=k8s/setup-exploits.sh \
+              --from-file=setup-exploits.sh=./k8s/setup-exploits.sh \
               --namespace=mcpo \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            # Validate mcp-servers directory and required files
-            if [ ! -d mcp-servers/ ]; then
-              echo "ERROR: mcp-servers/ directory not found"
-              exit 1
-            fi
-
-            if [ ! -f mcp-servers/pyproject.toml ] || [ ! -f mcp-servers/shell-server.py ]; then
-              echo "ERROR: Required MCP server files not found (pyproject.toml, shell-server.py)"
-              exit 1
-            fi
-
-            # Create ConfigMap from mcp-servers directory (only Python files)
             kubectl create configmap mcp-servers \
-              --from-file=pyproject.toml=mcp-servers/pyproject.toml \
-              --from-file=shell-server.py=mcp-servers/shell-server.py \
+              --from-file=pyproject.toml=./mcp-servers/pyproject.toml \
+              --from-file=shell-server.py=./mcp-servers/shell-server.py \
               --namespace=mcpo \
               --dry-run=client -o yaml | kubectl apply -f -
 
             echo "🚀 Deploying workshop resources..."
-            kubectl apply -f k8s/mcpo-deployment.yaml
-            kubectl apply -f k8s/mcpo-rbac.yaml
+            kubectl apply -f ./k8s/mcpo-deployment.yaml
+            kubectl apply -f ./k8s/mcpo-rbac.yaml
 
             echo "✅ Pre-sync hook completed successfully"
   - name: open-webui
