@@ -14,11 +14,18 @@ writeShellApplication {
     kubectl
   ];
   text = ''
-    # No Docker build needed - using base image with runtime configuration
+    # The actual source directory (not Nix store)
+    REPO_ROOT="${./.}"
+
+    # Initialize k8s resources first (before helmfile)
+    echo "📋 Initializing k8s resources from $REPO_ROOT..."
+    cd "$REPO_ROOT"
+    bash ./init-k8s-resources.sh
+
+    # Deploy with helmfile, passing the real source directory
     echo "🚀 Deploying with helmfile..."
-    cd ${./.}
-    export SOURCE_DIR="${./.}"
-    helmfile sync -f ${./helmfile.yaml.gotmpl}
+    cd "$REPO_ROOT"
+    helmfile sync -f ./helmfile.yaml.gotmpl
 
     function update_open_webui_ingress_hostname() {
       NAMESPACE="open-webui"

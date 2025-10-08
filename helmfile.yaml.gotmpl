@@ -23,44 +23,6 @@ releases:
       - controller:
           ingressClassResource:
             default: true
-    hooks:
-      - events: [presync]
-        command: bash
-        args:
-          - -c
-          - |
-            set -euo pipefail
-
-            # Use SOURCE_DIR from environment (set by deploy.nix)
-            SOURCE_DIR="{{ env "SOURCE_DIR" | default "." }}"
-
-            echo "🏗️  Working from: $SOURCE_DIR"
-            cd "$SOURCE_DIR"
-
-            echo "🏗️  Creating namespaces..."
-            kubectl create namespace mcpo --dry-run=client -o yaml | kubectl apply -f -
-
-            echo "📋 Deploying namespaces and secrets..."
-            kubectl apply -f k8s/playground-namespace.yaml
-            kubectl apply -f k8s/production-secrets.yaml
-
-            echo "📋 Creating ConfigMaps..."
-            kubectl create configmap setup-exploits-script \
-              --from-file=setup-exploits.sh=k8s/setup-exploits.sh \
-              --namespace=mcpo \
-              --dry-run=client -o yaml | kubectl apply -f -
-
-            kubectl create configmap mcp-servers \
-              --from-file=pyproject.toml=mcp-servers/pyproject.toml \
-              --from-file=shell-server.py=mcp-servers/shell-server.py \
-              --namespace=mcpo \
-              --dry-run=client -o yaml | kubectl apply -f -
-
-            echo "🚀 Deploying workshop resources..."
-            kubectl apply -f k8s/mcpo-deployment.yaml
-            kubectl apply -f k8s/mcpo-rbac.yaml
-
-            echo "✅ Pre-sync hook completed successfully"
   - name: open-webui
     namespace: open-webui
     chart: open-webui/open-webui
@@ -126,24 +88,27 @@ releases:
     namespace: ollama
     chart: ollama-helm/ollama
     createNamespace: true
-    atomic: true
+    atomic: false  # Changed to false to allow debugging if it fails
     version: 1.26.0
     values:
       - image:
           tag: 0.12.4
       - ollama:
+          gpu:
+            enabled: false  # Disable GPU for Autopilot without GPU quota
           models:
             pull:
               - llama3.1:8b
               - gpt-oss:latest
             run:
               - llama3.1:8b
-        nodeSelector: 
-          cloud.google.com/gke-accelerator: nvidia-l4
-          cloud.google.com/gke-accelerator-count: "1"
         resources:
-          limits:        
-            nvidia.com/gpu: 1
+          requests:
+            cpu: "2000m"
+            memory: "4Gi"
+          limits:
+            cpu: "4000m"
+            memory: "8Gi"
   - name: sysdig
     namespace: sysdig
     chart: sysdig/shield
