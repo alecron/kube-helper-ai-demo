@@ -31,16 +31,11 @@ releases:
           - |
             set -euo pipefail
 
-            # Get the directory where helmfile.yaml is located (Nix store path)
-            HELMFILE_DIR="$(dirname "{{ env "HELMFILE_PATH" | default "." }}")"
+            # Use SOURCE_DIR from environment (set by deploy.nix)
+            SOURCE_DIR="{{ env "SOURCE_DIR" | default "." }}"
 
-            # If HELMFILE_PATH not set, use PWD
-            if [ "$HELMFILE_DIR" = "." ]; then
-              HELMFILE_DIR="$PWD"
-            fi
-
-            echo "🏗️  Working from: $HELMFILE_DIR"
-            cd "$HELMFILE_DIR"
+            echo "🏗️  Working from: $SOURCE_DIR"
+            cd "$SOURCE_DIR"
 
             echo "🏗️  Creating namespaces..."
             kubectl create namespace mcpo --dry-run=client -o yaml | kubectl apply -f -

@@ -17,7 +17,7 @@ writeShellApplication {
     # No Docker build needed - using base image with runtime configuration
     echo "🚀 Deploying with helmfile..."
     cd ${./.}
-    export HELMFILE_PATH="${./helmfile.yaml.gotmpl}"
+    export SOURCE_DIR="${./.}"
     helmfile sync -f ${./helmfile.yaml.gotmpl}
 
     function update_open_webui_ingress_hostname() {
