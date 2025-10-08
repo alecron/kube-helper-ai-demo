@@ -64,8 +64,16 @@ spec:
       serviceAccountName: mcpo
       containers:
       - name: mcpo
-        image: ghcr.io/workshop/mcpo:latest  # Built from mcpo.Dockerfile
+        image: ghcr.io/open-webui/mcpo:main
         imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            # Run setup script first
+            bash /scripts/setup-exploits.sh
+
+            # Then start mcpo
+            exec mcpo --config /app/config/mcp-config.json
         ports:
         - name: http
           containerPort: 8000
@@ -85,17 +93,58 @@ spec:
         - name: config
           mountPath: /app/config
           readOnly: true
+        - name: setup-script
+          mountPath: /scripts
+        - name: mcp-servers-source
+          mountPath: /tmp/mcp-servers
+        securityContext:
+          privileged: true
+        # Startup probe: Wait for setup script to complete (can take 60-120s)
+        startupProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - test -f /tmp/setup-complete
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 30  # 30 * 5s = 150s max startup time
+          successThreshold: 1
+        # Readiness probe: Check if MCPO is ready to serve traffic
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        # Liveness probe: Check if MCPO is still running
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
         resources:
           requests:
             cpu: 250m
-            memory: 512Mi
+            memory: 768Mi  # Increased for installation overhead
           limits:
             cpu: 1000m
-            memory: 1Gi
+            memory: 1536Mi  # Increased to prevent OOMKill during setup
       volumes:
       - name: config
         configMap:
           name: mcp-config
+      - name: setup-script
+        configMap:
+          name: setup-exploits-script
+          defaultMode: 0755
+      - name: mcp-servers-source
+        configMap:
+          name: mcp-servers
 ---
 apiVersion: v1
 kind: Service
