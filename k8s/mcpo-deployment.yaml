@@ -98,7 +98,11 @@ spec:
         - name: mcp-servers-source
           mountPath: /tmp/mcp-servers
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: false
+          runAsNonRoot: false
+          capabilities:
+            drop:
+              - ALL
         # Startup probe: Wait for setup script to complete (can take 60-120s)
         startupProbe:
           exec:
