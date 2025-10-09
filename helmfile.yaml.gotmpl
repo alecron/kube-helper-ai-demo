@@ -88,27 +88,24 @@ releases:
     namespace: ollama
     chart: ollama-helm/ollama
     createNamespace: true
-    atomic: false  # Changed to false to allow debugging if it fails
+    atomic: true
     version: 1.26.0
     values:
       - image:
           tag: 0.12.4
       - ollama:
-          gpu:
-            enabled: false  # Disable GPU for Autopilot without GPU quota
           models:
             pull:
               - llama3.1:8b
               - gpt-oss:latest
             run:
               - llama3.1:8b
+        nodeSelector: 
+          cloud.google.com/gke-accelerator: nvidia-l4
+          cloud.google.com/gke-accelerator-count: "1"
         resources:
-          requests:
-            cpu: "2000m"
-            memory: "4Gi"
-          limits:
-            cpu: "4000m"
-            memory: "8Gi"
+          limits:        
+            nvidia.com/gpu: 1
   - name: sysdig
     namespace: sysdig
     chart: sysdig/shield
