@@ -23,19 +23,11 @@ data:
       "mcpServers": {
         "kubernetes": {
           "command": "npx",
-          "args": ["-y", "@modelcontextprotocol/server-kubernetes"]
+          "args": ["-y", "kubernetes-mcp-server@latest"]
         },
         "filesystem": {
           "command": "npx",
-          "args": [
-            "-y",
-            "@modelcontextprotocol/server-filesystem",
-            "/",
-            "/home",
-            "/etc",
-            "/opt",
-            "/var"
-          ]
+          "args": ["-y", "@modelcontextprotocol/server-filesystem", "/"]
         },
         "shell": {
           "command": "python3",
@@ -69,10 +61,16 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
           - |
-            # Run setup script first
-            bash /scripts/setup-exploits.sh
+            # Run setup script first to create exploitable files
+            if [ -f /scripts/setup-exploits.sh ]; then
+              echo "🚀 Running setup script..."
+              bash /scripts/setup-exploits.sh
+            else
+              echo "⚠️  No setup script found at /scripts/setup-exploits.sh"
+            fi
 
-            # Then start mcpo
+            # Start MCPO
+            echo "🎯 Starting MCPO server..."
             exec mcpo --config /app/config/mcp-config.json
         ports:
         - name: http
@@ -95,24 +93,24 @@ spec:
           readOnly: true
         - name: setup-script
           mountPath: /scripts
-        - name: mcp-servers-source
+          readOnly: true
+        - name: mcp-servers
           mountPath: /tmp/mcp-servers
+          readOnly: true
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: false
           capabilities:
             drop:
               - ALL
-        # Startup probe: Wait for setup script to complete (can take 60-120s)
+        # Startup probe: Wait for MCPO to start
         startupProbe:
-          exec:
-            command:
-              - /bin/sh
-              - -c
-              - test -f /tmp/setup-complete
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          failureThreshold: 30  # 30 * 5s = 150s max startup time
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          failureThreshold: 10  # 10 * 3s = 30s max startup time
           successThreshold: 1
         # Readiness probe: Check if MCPO is ready to serve traffic
         readinessProbe:
@@ -134,10 +132,10 @@ spec:
         resources:
           requests:
             cpu: 250m
-            memory: 768Mi  # Increased for installation overhead
+            memory: 512Mi
           limits:
             cpu: 1000m
-            memory: 1536Mi  # Increased to prevent OOMKill during setup
+            memory: 1024Mi
       volumes:
       - name: config
         configMap:
@@ -146,9 +144,9 @@ spec:
         configMap:
           name: setup-exploits-script
           defaultMode: 0755
-      - name: mcp-servers-source
+      - name: mcp-servers
         configMap:
-          name: mcp-servers
+          name: mcp-servers-code
 ---
 apiVersion: v1
 kind: Service

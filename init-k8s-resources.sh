@@ -16,15 +16,16 @@ echo "📋 Deploying namespaces and secrets..."
 kubectl apply -f k8s/playground-namespace.yaml
 kubectl apply -f k8s/production-secrets.yaml
 
-echo "📋 Creating ConfigMaps..."
+echo "📦 Creating ConfigMaps for MCPO..."
+# Create ConfigMap from setup script
 kubectl create configmap setup-exploits-script \
   --from-file=setup-exploits.sh=k8s/setup-exploits.sh \
   --namespace=mcpo \
   --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl create configmap mcp-servers \
-  --from-file=pyproject.toml=mcp-servers/pyproject.toml \
-  --from-file=shell-server.py=mcp-servers/shell-server.py \
+# Create ConfigMap from MCP servers directory
+kubectl create configmap mcp-servers-code \
+  --from-file=mcp-servers/ \
   --namespace=mcpo \
   --dry-run=client -o yaml | kubectl apply -f -
 
