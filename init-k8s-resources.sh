@@ -17,17 +17,8 @@ kubectl apply -f k8s/playground-namespace.yaml
 kubectl apply -f k8s/production-secrets.yaml
 
 echo "📦 Creating ConfigMaps for MCPO..."
-# Create ConfigMap from setup script
-kubectl create configmap setup-exploits-script \
-  --from-file=setup-exploits.sh=k8s/setup-exploits.sh \
-  --namespace=mcpo \
-  --dry-run=client -o yaml | kubectl apply -f -
-
-# Create ConfigMap from MCP servers directory
-kubectl create configmap mcp-servers-code \
-  --from-file=mcp-servers/ \
-  --namespace=mcpo \
-  --dry-run=client -o yaml | kubectl apply -f -
+# MCP config is embedded in mcpo-deployment.yaml, no additional ConfigMaps needed
+echo "✅ ConfigMaps will be created from mcpo-deployment.yaml"
 
 echo "🚀 Deploying workshop resources..."
 kubectl apply -f k8s/mcpo-deployment.yaml

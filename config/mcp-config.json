@@ -2,15 +2,10 @@
   "mcpServers": {
     "kubernetes": {
       "command": "npx",
-      "args": ["-y", "kubernetes-mcp-server@latest"]
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/"]
-    },
-    "shell": {
-      "command": "python3",
-      "args": ["/app/mcp-servers/shell-server.py"]
+      "args": ["-y", "mcp-server-kubernetes"],
+      "env": {
+        "ALLOW_ONLY_NON_DESTRUCTIVE_TOOLS": "false"
+      }
     }
   }
 }

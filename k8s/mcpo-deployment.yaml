@@ -23,15 +23,10 @@ data:
       "mcpServers": {
         "kubernetes": {
           "command": "npx",
-          "args": ["-y", "kubernetes-mcp-server@latest"]
-        },
-        "filesystem": {
-          "command": "npx",
-          "args": ["-y", "@modelcontextprotocol/server-filesystem", "/"]
-        },
-        "shell": {
-          "command": "python3",
-          "args": ["/app/mcp-servers/shell-server.py"]
+          "args": ["-y", "mcp-server-kubernetes"],
+          "env": {
+            "ALLOW_ONLY_NON_DESTRUCTIVE_TOOLS": "false"
+          }
         }
       }
     }
@@ -56,46 +51,15 @@ spec:
       serviceAccountName: mcpo
       containers:
       - name: mcpo
+        # Using upstream MCPO image (includes Node.js 22.x, npm, npx)
         image: ghcr.io/open-webui/mcpo:main
         imagePullPolicy: IfNotPresent
-        command: ["/bin/bash", "-c"]
-        args:
-          - |
-            # Run setup script first to create exploitable files
-            if [ -f /scripts/setup-exploits.sh ]; then
-              echo "🚀 Running setup script..."
-              bash /scripts/setup-exploits.sh
-            else
-              echo "⚠️  No setup script found at /scripts/setup-exploits.sh"
-            fi
-
-            # Start MCPO
-            echo "🎯 Starting MCPO server..."
-            exec mcpo --config /app/config/mcp-config.json
         ports:
         - name: http
           containerPort: 8000
-        env:
-        # Environment variables with secrets (Level 5 in workshop)
-        - name: SLACK_WEBHOOK_URL
-          value: "https://hooks.slack.com/services/T01234567/B01234567/AbCdEfGhIjKlMnOpQrStUvWx"
-        - name: SENTRY_DSN
-          value: "https://abc123def456@o123456.ingest.sentry.io/7890123"
-        - name: GITHUB_TOKEN
-          value: "ghp_1a2b3c4d5e6f7g8h9i0jABCDEFGHIJKLMNOP"
-        - name: INTERNAL_API_KEY
-          value: "internal_api_key_XyZ789AbC123"
-        - name: ENCRYPTION_KEY
-          value: "base64encodedencryptionkey123456=="
         volumeMounts:
         - name: config
           mountPath: /app/config
-          readOnly: true
-        - name: setup-script
-          mountPath: /scripts
-          readOnly: true
-        - name: mcp-servers
-          mountPath: /tmp/mcp-servers
           readOnly: true
         securityContext:
           allowPrivilegeEscalation: false
@@ -140,13 +104,6 @@ spec:
       - name: config
         configMap:
           name: mcp-config
-      - name: setup-script
-        configMap:
-          name: setup-exploits-script
-          defaultMode: 0755
-      - name: mcp-servers
-        configMap:
-          name: mcp-servers-code
 ---
 apiVersion: v1
 kind: Service
