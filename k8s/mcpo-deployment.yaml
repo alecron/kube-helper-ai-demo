@@ -54,6 +54,8 @@ spec:
         # Using upstream MCPO image (includes Node.js 22.x, npm, npx)
         image: ghcr.io/open-webui/mcpo:main
         imagePullPolicy: IfNotPresent
+        command: ["mcpo"]
+        args: ["--config", "/app/config/mcp-config.json"]
         ports:
         - name: http
           containerPort: 8000
@@ -70,7 +72,7 @@ spec:
         # Startup probe: Wait for MCPO to start
         startupProbe:
           httpGet:
-            path: /
+            path: /docs
             port: 8000
           initialDelaySeconds: 5
           periodSeconds: 3
@@ -79,7 +81,7 @@ spec:
         # Readiness probe: Check if MCPO is ready to serve traffic
         readinessProbe:
           httpGet:
-            path: /
+            path: /docs
             port: 8000
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -88,7 +90,7 @@ spec:
         # Liveness probe: Check if MCPO is still running
         livenessProbe:
           httpGet:
-            path: /
+            path: /docs
             port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
