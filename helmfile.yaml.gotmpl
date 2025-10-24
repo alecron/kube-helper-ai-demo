@@ -61,11 +61,10 @@ releases:
             value: "false"
           - name: ENABLE_WEBSOCKET_SUPPORT
             value: "false"
-          # MCPO (MCP-to-OpenAPI Proxy) configuration
-          - name: ENABLE_OPENAPI_SERVERS
+          - name: ENABLE_DIRECT_CONNECTIONS
             value: "true"
-          - name: OPENAPI_SERVERS
-            value: "http://mcpo.mcpo.svc.cluster.local:8000"
+          - name: TOOL_SERVER_CONNECTIONS
+            value: '[{"name":"Kubernetes","url":"http://mcpo.mcpo.svc.cluster.local:8000/kubernetes"}]'
         resources:
           limits:
             ephemeral-storage: 2Gi
