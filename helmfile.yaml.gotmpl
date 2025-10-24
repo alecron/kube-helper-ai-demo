@@ -97,8 +97,11 @@ releases:
             pull:
               - llama3.1:8b
               - gpt-oss:latest
+              - qwen2.5-coder:7b
             run:
               - llama3.1:8b
+              - gpt-oss:latest
+              - qwen2.5-coder:7b
         nodeSelector: 
           cloud.google.com/gke-accelerator: nvidia-l4
           cloud.google.com/gke-accelerator-count: "1"
