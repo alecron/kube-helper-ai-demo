@@ -52,7 +52,7 @@ releases:
           - name: OLLAMA_BASE_URL
             value: "http://ollama.ollama.svc.cluster.local:11434"
           - name: DEFAULT_MODELS
-            value: llama3.1:8b
+            value: gpt-oss:latest
           - name: ENABLE_FOLLOW_UP_GENERATION
             value: "false"
           - name: ENABLE_AUTOCOMPLETE_GENERATION
@@ -97,11 +97,8 @@ releases:
             pull:
               - llama3.1:8b
               - gpt-oss:latest
-              - qwen2.5-coder:7b
             run:
-              - llama3.1:8b
               - gpt-oss:latest
-              - qwen2.5-coder:7b
         nodeSelector: 
           cloud.google.com/gke-accelerator: nvidia-l4
           cloud.google.com/gke-accelerator-count: "1"
