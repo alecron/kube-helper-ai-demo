@@ -1,6 +1,6 @@
 helmDefaults:
   wait: true
-  timeout: 1800
+  timeout: 2400
 
 repositories:
   - name: open-webui
@@ -95,7 +95,6 @@ releases:
       - ollama:
           models:
             pull:
-              - llama3.1:8b
               - gpt-oss:latest
             run:
               - gpt-oss:latest
