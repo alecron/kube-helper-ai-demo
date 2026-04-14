@@ -91,8 +91,8 @@ releases:
     values:
     - image:
         pullPolicy: Always
-        repository: ghcr.io/tembleking/open-webui-pipelines
-        tag: 0.0.4
+        repository: ghcr.io/alecron/open-webui-pipelines
+        tag: 0.0.5
     - ingress:
         enabled: false
       persistence:
@@ -101,7 +101,7 @@ releases:
         automountServiceAccountToken: true
     - extraEnvVars:
       - name: PIPELINES_URLS
-        value: https://raw.githubusercontent.com/tembleking/kube-helper-ai-demo/master/helper.py
+        value: https://raw.githubusercontent.com/alecron/kube-helper-ai-demo/master/helper.py
     hooks:
       - events: [prepare]
         command: bash
