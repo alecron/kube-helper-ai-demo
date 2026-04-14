@@ -160,7 +160,7 @@ releases:
     values:
       - cluster_config:
           name: {{ env "CLUSTER_NAME" | default "ai-demo-cluster" }}
-          cluster_type: {{ env "CLUSTER_TYPE" | default "vanilla" }}
+          cluster_type: {{ env "CLUSTER_TYPE" | default "generic" }}
         sysdig_endpoint:
           region: {{ env "SYSDIG_REGION" | default "us2" }}
           access_key: {{ requiredEnv "SYSDIG_ACCESS_KEY" }}
