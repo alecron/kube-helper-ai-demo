@@ -150,6 +150,10 @@ releases:
         resources:
           limits:
             nvidia.com/gpu: 1
+        persistentVolume:
+          enabled: true
+          storageClass: local-path
+          size: 20Gi
   - name: sysdig
     namespace: sysdig
     chart: sysdig/shield
