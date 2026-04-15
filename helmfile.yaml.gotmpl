@@ -140,7 +140,6 @@ releases:
           models:
             pull:
               - llama3.1:8b
-              - gpt-oss:latest
             run:
               - llama3.1:8b
 {{- if eq (env "GPU_NODE_SELECTOR_ENABLED" | default "true") "true" }}
